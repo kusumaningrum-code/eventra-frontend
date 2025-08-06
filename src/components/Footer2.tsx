@@ -23,7 +23,7 @@ const Footer2 = () => {
           </ul>
         </div>
         <div className="text-center mt-5">
-          <p> 2024 Eventra (By Purwadhika Student)</p>
+          <p> 2024 Eventra</p>
         </div>
       </div>
     </div>
