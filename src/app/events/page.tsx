@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import {  Suspense ,useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
+import { callAPI } from "@/config/axios";
 
 type Event = {
   event_id: number;
@@ -38,21 +39,11 @@ const EventList = () => {
           ...(topic && { topic }),
         });
 
-        const response = await fetch(
-          `http://localhost:3232/events?${queryParams}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await callAPI.get("/events", {
+          params: queryParams,
+        });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await response.data;
         setEvents(data.events);
         setTotalPages(data.totalPages);
       } catch (error) {

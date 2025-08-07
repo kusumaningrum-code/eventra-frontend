@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AuthGuard from "@/guard/AuthGuard";
 import OrgSidebar from "@/components/OrgSideBar";
 import Image from "next/image";
-import axios from "axios";
+import { callAPI } from "@/config/axios";
 
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import {
@@ -37,9 +37,7 @@ const Dashboard = () => {
       }
 
       try {
-        const response = await axios.get(
-          `http://localhost:3232/events/total-events/${userId}`
-        );
+        const response = await callAPI.get(`/events/total-events/${userId}`);
         setEventCount(response.data.result);
       } catch (error) {
         console.log("Failed to fetch total events", error);
@@ -60,8 +58,8 @@ const Dashboard = () => {
       }
 
       try {
-        const response = await axios.get(
-          `http://localhost:3232/transactions/total-earnings/organizer/${userId}`
+        const response = await callAPI.get(
+          `/transactions/total-earnings/organizer/${userId}`
         );
         setTransactionCount(response.data.result);
       } catch (error) {
@@ -82,8 +80,8 @@ const Dashboard = () => {
       }
 
       try {
-        const response = await axios.get(
-          `http://localhost:3232/tickets/total-ticket/organizer/${userId}`
+        const response = await callAPI.get(
+          `/tickets/total-ticket/organizer/${userId}`
         );
         setTicketSold(response.data.result);
       } catch (error) {
@@ -104,8 +102,8 @@ const Dashboard = () => {
       }
 
       try {
-        const response = await axios.get(
-          `http://localhost:3232/tickets/total-customer/all-event/${userId}`
+        const response = await callAPI.get(
+          `/tickets/total-customer/all-event/${userId}`
         );
         setTotalPerson(response.data.result);
       } catch {
@@ -126,8 +124,8 @@ const Dashboard = () => {
       }
 
       try {
-        const response = await axios.get(
-          `http://localhost:3232/transactions/organizer/${userId}/stats`
+        const response = await callAPI.get(
+          `/transactions/organizer/${userId}/stats`
         );
 
         console.log("Data Berhasil didapatkan", response.data);

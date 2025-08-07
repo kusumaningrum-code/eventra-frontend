@@ -3,7 +3,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState, ChangeEvent, FormEvent } from "react";
-import axios from "axios";
+import { callAPI } from "@/config/axios";
 import {
   Ticket,
   Calendar,
@@ -108,15 +108,11 @@ const TicketForm = () => {
 
       console.log("Submitting ticket payload:", ticketPayload);
 
-      const response = await axios.post(
-        "http://localhost:3232/tickets",
-        ticketPayload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await callAPI.post("/tickets", ticketPayload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       console.log("Ticket creation response:", response.data);
 

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
+import { callAPI } from "@/config/axios";
 type Category = {
   displayName: string;
   dbTopic: string;
@@ -60,11 +60,8 @@ const CategoryEvent = () => {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:3232/event-categories/topics"
-        );
-        const topics = await response.json();
-        setAvailableTopics(topics);
+        const response = await callAPI.get("/event-categories/topics");
+        setAvailableTopics(response.data);
       } catch (error) {
         console.error("Failed to fetch topics:", error);
       }

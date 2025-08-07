@@ -3,7 +3,6 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
 import { FaUpload, FaCreditCard } from "react-icons/fa";
 import { callAPI } from "@/config/axios";
 
@@ -23,7 +22,7 @@ interface DiscountCoupon {
 
 interface PointBalance {
   point: number;
-  expirationDate: string
+  expirationDate: string;
 }
 
 interface BankAccount {
@@ -62,8 +61,8 @@ const Transaction = () => {
     const fetchTicket = async () => {
       try {
         console.log("Fetching ticket with ID:", params.ticketId);
-        const response = await axios.get<Ticket>(
-          `http://localhost:3232/tickets/${params.ticketId}`
+        const response = await callAPI.get<Ticket>(
+          `/tickets/${params.ticketId}`
         );
         console.log("Ticket response:", response.data);
         setTicket(response.data);
@@ -99,13 +98,10 @@ const Transaction = () => {
     try {
       if (!ticket) return;
 
-      const response = await axios.post(
-        "http://localhost:3232/promotions/check",
-        {
-          code: promoCode,
-          ticketId: params.ticketId,
-        }
-      );
+      const response = await callAPI.post("/promotions/check", {
+        code: promoCode,
+        ticketId: params.ticketId,
+      });
 
       const { discount } = response.data;
       setDiscount(discount);
@@ -214,15 +210,11 @@ const Transaction = () => {
         });
       }
 
-      const response = await axios.post(
-        "http://localhost:3232/transactions",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await callAPI.post("/transactions", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.status === 201) {
         alert("Transaction successful!");
@@ -371,12 +363,15 @@ const Transaction = () => {
             </p>
             <div></div>
           </div>
-          <div className="mt-6 w-96 border-2 border-gray-300 p-4 rounded-lg text-center cursor-pointer shadow-md hover:shadow-lg"
-          onClick={() => handlePointClick({
-            point : Number(points),
-            expirationDate: ""
-
-          })}>
+          <div
+            className="mt-6 w-96 border-2 border-gray-300 p-4 rounded-lg text-center cursor-pointer shadow-md hover:shadow-lg"
+            onClick={() =>
+              handlePointClick({
+                point: Number(points),
+                expirationDate: "",
+              })
+            }
+          >
             <h3 className="font-semibold">Use Points</h3>
             <p className="text-lg font-semibold text-blue-500">{points}</p>
           </div>

@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
+import { callAPI } from "@/config/axios";
 import { Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 
@@ -47,7 +47,7 @@ export default function EditEventPage() {
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3232/events/${id}`);
+        const response = await callAPI.get(`events/${id}`);
         const eventData = response.data;
 
         const date = new Date(eventData.date);
@@ -120,8 +120,8 @@ export default function EditEventPage() {
 
       if (image && imagePreview) {
         try {
-          const uploadResponse = await axios.post(
-            "http://localhost:3232/events/upload",
+          const uploadResponse = await callAPI.post(
+            "/events/upload",
             { image: imagePreview },
             {
               headers: {
@@ -157,10 +157,7 @@ export default function EditEventPage() {
         image: imageUrl,
       };
 
-      await axios.patch(
-        `http://localhost:3232/events/${id}`,
-        updateData
-      );
+      await callAPI.patch(`/events/${id}`, updateData);
 
       setSuccessMessage("Event updated successfully!");
 

@@ -44,9 +44,7 @@ const CustomerEditProfile = () => {
       //ambil data user dari localstorage
       const fetchUserProfile = async () => {
         try {
-          const response = await callAPI.get(
-            `http://localhost:3232/user/data-user/${storedUserId}`
-          );
+          const response = await callAPI.get(`/user/data-user/${storedUserId}`);
           const userData = response.data.result;
 
           //set initial values
@@ -77,10 +75,7 @@ const CustomerEditProfile = () => {
 
     try {
       if (userId) {
-        const response = await callAPI.patch(
-          `http://localhost:3232/user/update/${userId}`,
-          values
-        );
+        const response = await callAPI.patch(`/user/update/${userId}`, values);
         console.log(" Akun berhasil diupdate", response.data);
 
         // update data user di reduxnya

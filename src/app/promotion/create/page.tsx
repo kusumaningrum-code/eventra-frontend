@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { callAPI } from "@/config/axios";
 
 type PromotionForm = {
   eventId: number;
@@ -28,43 +29,68 @@ export default function CreatePromotion() {
   const promotionType = watch("type");
   const promotionValue = watch("value");
 
+  // const createPromotion = async (data: PromotionForm) => {
+  //   try {
+  //     setIsLoading(true);
+  //     setError("");
+
+  //     const res = await fetch("http://localhost:3232/promotions", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //       },
+  //       body: JSON.stringify({
+  //         eventId: Number(data.eventId),
+  //         type: data.type,
+  //         value: Number(data.value),
+  //         promotionCode: data.promotionCode.toUpperCase(),
+  //         startDate: new Date(data.startDate).toISOString(),
+  //         expirationDate: new Date(data.expirationDate).toISOString(),
+  //         maxUse: Number(data.maxUse),
+  //       }),
+  //     });
+
+  //     if (!res.ok) {
+  //       const errData = await res.json();
+  //       throw new Error(errData.error || "Failed to create promotion");
+  //     }
+
+  //     router.push("/dashboard/promotions");
+  //     router.refresh();
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : "Something went wrong");
+  //     console.error(err);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
   const createPromotion = async (data: PromotionForm) => {
     try {
       setIsLoading(true);
       setError("");
 
-      const res = await fetch("http://localhost:3232/promotions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          eventId: Number(data.eventId),
-          type: data.type,
-          value: Number(data.value),
-          promotionCode: data.promotionCode.toUpperCase(),
-          startDate: new Date(data.startDate).toISOString(),
-          expirationDate: new Date(data.expirationDate).toISOString(),
-          maxUse: Number(data.maxUse),
-        }),
+      await callAPI.post("/promotions", {
+        eventId: Number(data.eventId),
+        type: data.type,
+        value: Number(data.value),
+        promotionCode: data.promotionCode.toUpperCase(),
+        startDate: new Date(data.startDate).toISOString(),
+        expirationDate: new Date(data.expirationDate).toISOString(),
+        maxUse: Number(data.maxUse),
       });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Failed to create promotion");
-      }
 
       router.push("/dashboard/promotions");
       router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+    } catch (err: any) {
+      const errorMessage =
+        err?.response?.data?.error || err.message || "Something went wrong";
+      setError(errorMessage);
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
-
   const previewDiscount = () => {
     if (!promotionValue) return "0";
     const samplePrice = 100;

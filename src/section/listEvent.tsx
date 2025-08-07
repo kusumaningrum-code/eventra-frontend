@@ -7,6 +7,7 @@ import CardBody from "react-bootstrap/esm/CardBody";
 import CardTitle from "react-bootstrap/esm/CardTitle";
 import CardText from "react-bootstrap/esm/CardText";
 import { useRouter } from "next/navigation";
+import { callAPI } from "@/config/axios";
 
 interface Event {
   event_id: number;
@@ -32,10 +33,8 @@ const EventList = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch(`http://localhost:3232/events?limit=4`);
-      if (!response.ok) throw new Error("Failed to fetch");
-      const data = await response.json();
-      setEvents(data.events);
+      const res = await callAPI.get("/events?limit=4");
+      setEvents(res.data.events);
     } catch (err) {
       console.error("Failed to fetch events:", err);
     } finally {

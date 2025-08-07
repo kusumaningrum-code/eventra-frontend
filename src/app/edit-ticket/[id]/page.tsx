@@ -3,8 +3,8 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import AuthGuard from "@/guard/AuthGuard";
+import { callAPI } from "@/config/axios";
 
 interface TicketData {
   ticket_id: number;
@@ -55,17 +55,13 @@ export default function EditTicket() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const eventResponse = await axios.get(
-          `http://localhost:3232/events/${eventId}`
-        );
+        const eventResponse = await callAPI.get(`/events/${eventId}`);
         if (!eventResponse.data) {
           throw new Error("Event not found");
         }
         setEvent(eventResponse.data);
 
-        const ticketResponse = await axios.get(
-          `http://localhost:3232/events/${eventId}/tickets`
-        );
+        const ticketResponse = await callAPI.get(`/events/${eventId}/tickets`);
         const tickets = ticketResponse.data;
         const ticketData = tickets.find(
           (t: TicketData) => t.ticket_id === Number(ticketId)
@@ -110,7 +106,7 @@ export default function EditTicket() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.patch(`http://localhost:3232/tickets/${ticketId}`, formData);
+      await callAPI.patch(`/tickets/${ticketId}`, formData);
       router.push(`/event/${eventId}?updatedTicketId=${ticketId}`);
     } catch (err) {
       console.error("Failed to update ticket:", err);

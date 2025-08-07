@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Image as ImageIcon } from "lucide-react";
 import AuthGuard from "@/guard/AuthGuard";
+import { callAPI } from "@/config/axios";
 
 interface Province {
   id: string;
@@ -61,9 +62,9 @@ function EventCreationPage() {
       try {
         const [topicsResponse, formatsResponse, citiesResponse] =
           await Promise.all([
-            axios.get("http://localhost:3232/event-categories/topics"),
-            axios.get("http://localhost:3232/event-categories/formats"),
-            axios.get("http://localhost:3232/locations/cities"),
+            callAPI.get("/event-categories/topics"),
+            callAPI.get("/event-categories/formats"),
+            callAPI.get("/locations/cities"),
           ]);
 
         setTopics(
@@ -88,9 +89,7 @@ function EventCreationPage() {
     setSelectedDistrict(null);
 
     try {
-      const response = await axios.get(
-        `http://localhost:3232/locations/districts/${cityId}`
-      );
+      const response = await callAPI.get(`/locations/districts/${cityId}`);
       setDistricts(response.data);
     } catch (error) {
       console.error("Error fetching districts:", error);
@@ -127,15 +126,9 @@ function EventCreationPage() {
       if (image && imagePreview) {
         try {
           console.log("Uploading image...");
-          const uploadResponse = await axios.post(
-            "http://localhost:3232/events/upload",
-            { image: imagePreview },
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          const uploadResponse = await callAPI.post("/events/upload", {
+            image: imagePreview,
+          });
 
           if (!uploadResponse.data?.url) {
             throw new Error("No URL in upload response");
@@ -149,14 +142,11 @@ function EventCreationPage() {
         }
       }
 
-      const locationDetailResponse = await axios.post(
-        "http://localhost:3232/location-details",
-        {
-          province: province?.name || "Jawa Timur",
-          city: selectedCity?.name || "",
-          district: selectedDistrict?.name || "",
-        }
-      );
+      const locationDetailResponse = await callAPI.post("/location-details", {
+        province: province?.name || "Jawa Timur",
+        city: selectedCity?.name || "",
+        district: selectedDistrict?.name || "",
+      });
 
       const organiserId = localStorage.getItem("userId");
       const eventPayload = {
@@ -176,10 +166,7 @@ function EventCreationPage() {
       };
 
       console.log("Creating event with payload:", eventPayload);
-      const eventResponse = await axios.post(
-        "http://localhost:3232/events",
-        eventPayload
-      );
+      const eventResponse = await callAPI.post("/events", eventPayload);
 
       if (eventResponse.data?.event_id) {
         router.push(`/event/${eventResponse.data.event_id}`);

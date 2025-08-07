@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import axios from "axios";
+import { callAPI } from "@/config/axios";
 
 // export default function CreatePromotion() {
 const PromotionForm = () => {
@@ -22,7 +22,7 @@ const PromotionForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`http://localhost:3232/promotions`, {
+      await callAPI.post(`/promotions`, {
         ...formData,
         eventId: Number(eventId),
         value: Number(formData.value),
@@ -145,9 +145,8 @@ const PromotionForm = () => {
 
 export default function CreatePromotion() {
   return (
-
-      <Suspense fallback={<div>Loading...</div>}>
-        <PromotionForm />
-      </Suspense>
-);
+    <Suspense fallback={<div>Loading...</div>}>
+      <PromotionForm />
+    </Suspense>
+  );
 }

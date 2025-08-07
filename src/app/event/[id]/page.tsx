@@ -3,7 +3,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { callAPI } from "@/config/axios";
 import {
   FaCalendarAlt,
   FaClock,
@@ -29,7 +29,6 @@ interface Review {
     imgProfile: string | null;
   };
 }
-
 interface EventDetail {
   event_id: number;
   name: string;
@@ -49,7 +48,6 @@ interface EventDetail {
     district: string;
   };
 }
-
 interface TicketData {
   ticket_id: number;
   eventId: number;
@@ -74,6 +72,7 @@ interface Promotion {
   maxUse: number;
   useCount: number;
 }
+
 export default function EventDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -93,37 +92,19 @@ export default function EventDetailPage() {
   >("description");
   const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
-  // const [newReview, setNewReview] = useState({
-  //   rating: 0,
-  //   comment: "",
-  // });
-  
   const [editingReview, setEditingReview] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState({
-    rating: 0,
-    comment: "",
-  });
+  const [editForm, setEditForm] = useState({ rating: 0, comment: "" });
   const user = useAppSelector((state) => state.userReducer);
-
   useEffect(() => {
     if (!id) {
       setError("Event ID is missing.");
       setLoading(false);
       return;
     }
-
     const fetchEventDetails = async () => {
       try {
-        console.log("Fetching event details for ID:", id);
-        const response = await axios.get(`http://localhost:3232/events/${id}`);
-        console.log("Event response data:", response.data);
-
-        console.log("Image URL:", response.data.image);
-
-        if (!response.data) {
-          throw new Error("No event data received");
-        }
-
+        const response = await callAPI.get(`/events/${id}`);
+        if (!response.data) throw new Error("No event data received");
         setEvent(response.data);
       } catch (err) {
         console.error("Failed to fetch event details:", err);
@@ -132,116 +113,62 @@ export default function EventDetailPage() {
         setLoading(false);
       }
     };
-
     fetchEventDetails();
   }, [id]);
+
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        console.log("Fetching tickets for event:", id);
-        const response = await axios.get(
-          `http://localhost:3232/events/${id}/tickets`
-        );
-
-        if (!response.data) {
-          throw new Error("No tickets data received");
-        }
-
-        console.log("Ticket response data:", response.data);
+        const response = await callAPI.get(`/events/${id}/tickets`);
+        if (!response.data) throw new Error("No tickets data received");
         setAllTickets(response.data);
       } catch (error: any) {
         console.error("Error fetching tickets:", error);
       }
     };
-
-    if (id) {
-      fetchTickets();
-    }
+    if (id) fetchTickets();
   }, [id]);
 
   useEffect(() => {
     const fetchNewTicket = async () => {
-      if (!newTicketId) {
-        console.log("No ticket ID provided");
-        return;
-      }
-
+      if (!newTicketId) return;
       try {
-        console.log("NewTicketId type:", typeof newTicketId);
-        console.log("NewTicketId value:", newTicketId);
-
-        const response = await axios.get(
-          `http://localhost:3232/events/${id}/tickets`
-        );
-
-        console.log("Response data:", response.data);
-
-        if (Array.isArray(response.data)) {
-          console.log(
-            "Ticket IDs in response:",
-            response.data.map((t) => t.ticket_id)
-          );
-        }
-
+        const response = await callAPI.get(`/events/${id}/tickets`);
         const ticketData = Array.isArray(response.data)
           ? response.data.find(
-              (ticket) =>
-                ticket.ticket_id === Number(newTicketId) ||
-                ticket.ticket_id === newTicketId
+              (ticket) => ticket.ticket_id === Number(newTicketId)
             )
           : null;
-
-        console.log("Found ticket data:", ticketData);
-
-        if (ticketData) {
-          setNewTicket(ticketData);
-        } else {
-          console.log("Ticket not found in response");
-        }
+        if (ticketData) setNewTicket(ticketData);
       } catch (error: any) {
-        console.error("Error fetching ticket details:", {
-          status: error.response?.status,
-          message: error.message,
-          data: error.response?.data,
-        });
+        console.error("Error fetching ticket details:", error);
       }
     };
-
     fetchNewTicket();
   }, [newTicketId, id]);
 
   useEffect(() => {
     const fetchPromotions = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3232/events/${id}/promotions`
-        );
+        const response = await callAPI.get(`/events/${id}/promotions`);
         setPromotions(response.data);
       } catch (error) {
         console.error("Failed to fetch promotions:", error);
       }
     };
-
-    if (id) {
-      fetchPromotions();
-    }
+    if (id) fetchPromotions();
   }, [id]);
 
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3232/events/${id}/reviews`
-        );
+        const response = await callAPI.get(`/events/${id}/reviews`);
         setReviews(response.data);
       } catch (error) {
         console.error("Failed to fetch reviews:", error);
       }
     };
-
-    if (id) {
-      fetchReviews();
-    }
+    if (id) fetchReviews();
   }, [id]);
 
   const formatToIDR = (price: number | null) =>
@@ -253,33 +180,12 @@ export default function EventDetailPage() {
       : "N/A";
 
   const handleCreateTicket = () => {
-    if (event) {
-      router.push(`/create-ticket?eventId=${event.event_id}`);
-    }
+    if (event) router.push(`/create-ticket?eventId=${event.event_id}`);
   };
+
   const handleEditEvent = () => {
-    if (event) {
-      router.push(`/edit-event/${event.event_id}`);
-    }
+    if (event) router.push(`/edit-event/${event.event_id}`);
   };
-
-  // const handleEditTicket = (ticketId: number) => {
-  //   router.push(`/edit-ticket/${ticketId}?eventId=${event?.event_id}`);
-  // };
-
-  // const handleDeleteTicket = async (ticketId: number) => {
-  //   if (!confirm("Are you sure you want to delete this ticket?")) return;
-
-  //   try {
-  //     await axios.delete(`http://localhost:3232/tickets/${ticketId}`);
-  //     setAllTickets((tickets) =>
-  //       tickets.filter((t) => t.ticket_id !== ticketId)
-  //     );
-  //     setSelectedTicket(null);
-  //   } catch (err) {
-  //     console.error("Failed to delete ticket:", err);
-  //   }
-  // };
 
   const handleBuyTicket = () => {
     if (selectedTicket) {
@@ -291,45 +197,19 @@ export default function EventDetailPage() {
     }
   };
 
-  // const handleSubmitReview = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   try {
-  //     const userId = localStorage.getItem("userId");
-  //     console.log("Submitting review with userId:", userId);
-  //     console.log("Full review data:", {
-  //       ...newReview,
-  //       userId: parseInt(userId || "0"),
-  //     });
-  //     const response = await axios.post(
-  //       `http://localhost:3232/events/${id}/reviews`,
-  //       { ...newReview, userId: parseInt(userId || "0") }
-  //     );
-  //     console.log("Review response ini:", response.data);
-  //     setReviews([response.data, ...reviews]);
-  //     setNewReview({ rating: 0, comment: "" });
-  //   } catch (error) {
-  //     console.error("Failed to submit review:", error);
-  //   }
-  // };
-  // const userId = localStorage.getItem("userId");
   const handleEditClick = (review: Review) => {
     setEditingReview(review.id);
-    setEditForm({
-      rating: review.rating,
-      comment: review.comment,
-    });
+    setEditForm({ rating: review.rating, comment: review.comment });
   };
 
   const handleUpdateReview = async (reviewId: number) => {
     try {
-      await axios.patch(`http://localhost:3232/reviews/${reviewId}`, editForm);
-
+      await callAPI.patch(`/reviews/${reviewId}`, editForm);
       setReviews(
         reviews.map((review) =>
           review.id === reviewId ? { ...review, ...editForm } : review
         )
       );
-
       setEditingReview(null);
     } catch (error) {
       console.error("Failed to update review:", error);
@@ -338,14 +218,14 @@ export default function EventDetailPage() {
 
   const handleDeleteReview = async (reviewId: number) => {
     if (!window.confirm("Are you sure you want to delete this review?")) return;
-
     try {
-      await axios.delete(`http://localhost:3232/reviews/${reviewId}`);
+      await callAPI.delete(`/reviews/${reviewId}`);
       setReviews(reviews.filter((review) => review.id !== reviewId));
     } catch (error) {
       console.error("Failed to delete review:", error);
     }
   };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto my-8 p-4">Loading event details...</div>
@@ -358,11 +238,12 @@ export default function EventDetailPage() {
     );
   }
 
-  if (!event)
+  if (!event) {
     return <div className="text-gray-500">Event details are unavailable.</div>;
+  }
 
   return (
-    <div className="max-w-7xl mx-auto my-8 p-6">
+    <div className="max-w-7xl mx-auto my-8 p-4 sm:p-6">
       {newTicket && showNotification && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md relative">
           <button
@@ -374,7 +255,7 @@ export default function EventDetailPage() {
           <h3 className="text-lg font-bold text-green-800">
             Tiket Berhasil Dibuat!
           </h3>
-          <div className="mt-2 grid grid-cols-2 gap-4">
+          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <p>
               <strong>Nama Tiket:</strong> {newTicket.ticketName || "N/A"}
             </p>
@@ -400,37 +281,27 @@ export default function EventDetailPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-8 mb-8">
-        <div className="bg-gray-100 rounded-lg flex items-center justify-center h-96">
-          {event.image ? (
-            <img
-              src={event.image}
-              alt={event.name}
-              className="w-full h-full object-cover rounded-lg"
-            />
-          ) : (
-            <img
-              src="/images/event-list-default.svg"
-              alt="gambar event"
-              className="w-full h-full object-cover rounded-lg"
-            />
-          )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="bg-gray-100 rounded-lg flex items-center justify-center h-64 sm:h-80 lg:h-96">
+          <img
+            src={event.image || "/images/event-list-default.svg"}
+            alt={event.name}
+            className="w-full h-full object-cover rounded-lg"
+          />
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-customMediumBlue">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md flex flex-col">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-customMediumBlue">
               {event.name}
             </h1>
             {user.isAuth && user.role === "ORGANIZER" && (
-              <>
-                <button
-                  onClick={handleEditEvent}
-                  className="px-4 py-2 bg-customLightBlue text-white rounded-md hover:bg-customMediumBlue transition-colors flex items-center gap-2"
-                >
-                  <FaEdit /> Edit Event
-                </button>
-              </>
+              <button
+                onClick={handleEditEvent}
+                className="px-4 py-2 bg-customLightBlue text-white rounded-md hover:bg-customMediumBlue transition-colors flex items-center gap-2 flex-shrink-0"
+              >
+                <FaEdit /> Edit Event
+              </button>
             )}
           </div>
           <div className="space-y-4">
@@ -439,7 +310,7 @@ export default function EventDetailPage() {
               <span>{event.location}</span>
             </div>
             {event.locationDetail && (
-              <div className="ml-6">
+              <div className="ml-6 text-sm text-gray-600">
                 <p>Provinsi: {event.locationDetail.province}</p>
                 <p>Kota: {event.locationDetail.city}</p>
                 <p>Kecamatan: {event.locationDetail.district}</p>
@@ -466,9 +337,9 @@ export default function EventDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+          <div className="flex flex-wrap gap-2 sm:gap-4 mb-6">
             <button
               onClick={() => setActiveTab("description")}
               className={`px-4 py-2 rounded-md ${
@@ -502,7 +373,7 @@ export default function EventDetailPage() {
           </div>
 
           {activeTab === "description" ? (
-            <div className="prose">{event.description}</div>
+            <div className="prose max-w-none">{event.description}</div>
           ) : activeTab === "tickets" ? (
             <div>
               <div className="flex justify-between items-center mb-4">
@@ -510,34 +381,25 @@ export default function EventDetailPage() {
                 {user.isAuth && user.role === "ORGANIZER" && (
                   <button
                     onClick={handleCreateTicket}
-                    className="px-4 py-2 bg-customOrange text-white rounded-md hover:bg-[#f57b1d]"
+                    className="px-4 py-2 bg-customOrange text-white rounded-md hover:bg-[#f57b1d] text-sm sm:text-base"
                   >
                     Buat Tiket
                   </button>
                 )}
               </div>
-
               <div className="space-y-4">
                 {allTickets.map((ticket) => (
                   <div
                     key={`ticket-${ticket.ticket_id}`}
-                    className={`p-4 rounded-md border border-gray-200 hover:border-gray-300 ${
-                      ticket.available <= 0 ? "opacity-50" : ""
+                    className={`p-4 rounded-md border-2 ${
+                      selectedTicket?.ticket_id === ticket.ticket_id
+                        ? "border-customMediumBlue bg-gray-50"
+                        : "border-gray-200"
+                    } ${
+                      ticket.available <= 0
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:border-gray-300"
                     }`}
-                    style={{
-                      borderColor:
-                        selectedTicket?.ticket_id === ticket.ticket_id
-                          ? "#424769"
-                          : "",
-                      borderWidth:
-                        selectedTicket?.ticket_id === ticket.ticket_id
-                          ? "2px"
-                          : "1px",
-                      backgroundColor:
-                        selectedTicket?.ticket_id === ticket.ticket_id
-                          ? "#f8f9fa"
-                          : "",
-                    }}
                   >
                     <div className="flex justify-between items-start">
                       <div
@@ -584,8 +446,8 @@ export default function EventDetailPage() {
                                 )
                               ) {
                                 try {
-                                  await axios.delete(
-                                    `http://localhost:3232/tickets/${ticket.ticket_id}`
+                                  await callAPI.delete(
+                                    `/tickets/${ticket.ticket_id}`
                                   );
                                   setAllTickets((tickets) =>
                                     tickets.filter(
@@ -627,19 +489,18 @@ export default function EventDetailPage() {
                     onClick={() =>
                       router.push(`/create-promotion?eventId=${event.event_id}`)
                     }
-                    className="px-4 py-2 bg-customMediumBlue text-white rounded-md hover:bg-customDarkBlue"
+                    className="px-4 py-2 bg-customMediumBlue text-white rounded-md hover:bg-customDarkBlue text-sm sm:text-base"
                   >
                     Buat Promosi
                   </button>
                 )}
               </div>
-
               <div className="space-y-4">
                 {promotions.length > 0 ? (
                   promotions.map((promo) => (
                     <div
                       key={promo.promotion_id}
-                      className="p-4 border border-gray-200 rounded-md hover:border-gray-300"
+                      className="p-4 border border-gray-200 rounded-md"
                     >
                       <div className="flex justify-between items-start">
                         <div>
@@ -676,8 +537,8 @@ export default function EventDetailPage() {
                                 )
                               ) {
                                 try {
-                                  await axios.delete(
-                                    `http://localhost:3232/promotions/${promo.promotion_id}`
+                                  await callAPI.delete(
+                                    `/promotions/${promo.promotion_id}`
                                   );
                                   setPromotions(
                                     promotions.filter(
@@ -712,10 +573,11 @@ export default function EventDetailPage() {
           )}
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        {/* Kolom Kanan: Detail Tiket Terpilih */}
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
           {selectedTicket ? (
             <div>
-              <h2 className="text-2xl font-semibold mb-4">
+              <h2 className="text-xl md:text-2xl font-semibold mb-4">
                 {selectedTicket.ticketName}
               </h2>
               <div className="space-y-4 mb-6">
@@ -724,16 +586,16 @@ export default function EventDetailPage() {
                   Harga: {formatToIDR(selectedTicket.price)}
                 </p>
                 <p>Tersedia: {selectedTicket.available}</p>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 border-t pt-4 mt-4">
                   <p>
-                    Berlaku mulai:{" "}
+                    <strong>Berlaku mulai:</strong>{" "}
                     {new Date(selectedTicket.startDate).toLocaleString()}
                   </p>
                   <p>
-                    Berlaku hingga:{" "}
+                    <strong>Berlaku hingga:</strong>{" "}
                     {new Date(selectedTicket.expiredDate).toLocaleString()}
                   </p>
-                  <p>
+                  <p className="mt-2">
                     <strong>Nama Narahubung:</strong>{" "}
                     {selectedTicket.contactName}
                   </p>
@@ -763,66 +625,16 @@ export default function EventDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Bagian Review (Sudah cukup responsif) */}
       <div className="max-w-7xl mx-auto mt-8">
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold mb-6">Reviews</h2>
-
-          {/* review form */}
-          {/* {user.isAuth && user.role === "CUSTOMER" && (
-            <>
-              <form onSubmit={handleSubmitReview} className="mb-8">
-                <div className="mb-4">
-                  <div className="flex gap-2 mb-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() =>
-                          setNewReview({ ...newReview, rating: star })
-                        }
-                        onMouseEnter={() => setHoveredStar(star)}
-                        onMouseLeave={() => setHoveredStar(0)}
-                        className="text-2xl"
-                      >
-                        <FaStar
-                          className={
-                            star <= (hoveredStar || newReview.rating)
-                              ? "text-yellow-400"
-                              : "text-gray-300"
-                          }
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="mb-4">
-                  <textarea
-                    value={newReview.comment}
-                    onChange={(e) =>
-                      setNewReview({ ...newReview, comment: e.target.value })
-                    }
-                    className="w-full p-3 border rounded-md"
-                    placeholder="Tulis review mu..."
-                    rows={4}
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-customMediumBlue text-white rounded-md hover:bg-customDarkBlue"
-                >
-                  Kirim Review
-                </button>
-              </form>
-            </>
-          )} */}
-
-          {/* reviews list */}
           <div className="space-y-6">
             {reviews.map((review) => (
-              <div key={review.id} className="border-b pb-6">
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
+              <div key={review.id} className="border-b pb-6 last:border-b-0">
+                <div className="flex items-start sm:items-center gap-4 mb-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                     {review.user.imgProfile ? (
                       <img
                         src={review.user.imgProfile}
@@ -835,7 +647,7 @@ export default function EventDetailPage() {
                       </div>
                     )}
                   </div>
-                  <div>
+                  <div className="flex-grow">
                     <p className="font-semibold">{review.user.username}</p>
                     {editingReview === review.id ? (
                       <div className="flex gap-1">
@@ -873,51 +685,48 @@ export default function EventDetailPage() {
                       </div>
                     )}
                   </div>
-
                   {review.userId ===
-                    parseInt(localStorage.getItem("userId") || "0") && (
-                    <div className="ml-auto flex gap-2">
-                      {user.isAuth && user.role === "CUSTOMER" && (
-                        <>
-                          {editingReview === review.id ? (
-                            <>
-                              <button
-                                onClick={() => handleUpdateReview(review.id)}
-                                className="p-1 text-customMediumBlue hover:text-customDarkBlue flex items-center gap-1"
-                                title="Save"
-                              >
-                                <FaSave />
-                              </button>
-                              <button
-                                onClick={() => setEditingReview(null)}
-                                className="p-1 text-gray-600 hover:text-gray-800 flex items-center gap-1"
-                                title="Cancel"
-                              >
-                                <FaTimes />
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => handleEditClick(review)}
-                                className="p-1 text-customMediumBlue hover:text-customDarkBlue"
-                                title="Edit review"
-                              >
-                                <FaEdit />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteReview(review.id)}
-                                className="p-1 text-customOrange hover:text-red-800"
-                                title="Delete review"
-                              >
-                                <FaTrash />
-                              </button>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
+                    parseInt(localStorage.getItem("userId") || "0") &&
+                    user.isAuth &&
+                    user.role === "CUSTOMER" && (
+                      <div className="ml-auto flex gap-2">
+                        {editingReview === review.id ? (
+                          <>
+                            <button
+                              onClick={() => handleUpdateReview(review.id)}
+                              className="p-1 text-customMediumBlue hover:text-customDarkBlue"
+                              title="Save"
+                            >
+                              <FaSave />
+                            </button>
+                            <button
+                              onClick={() => setEditingReview(null)}
+                              className="p-1 text-gray-600 hover:text-gray-800"
+                              title="Cancel"
+                            >
+                              <FaTimes />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleEditClick(review)}
+                              className="p-1 text-customMediumBlue hover:text-customDarkBlue"
+                              title="Edit review"
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteReview(review.id)}
+                              className="p-1 text-customOrange hover:text-red-800"
+                              title="Delete review"
+                            >
+                              <FaTrash />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                 </div>
                 {editingReview === review.id ? (
                   <textarea
@@ -929,7 +738,9 @@ export default function EventDetailPage() {
                     rows={3}
                   />
                 ) : (
-                  <p className="text-gray-700">{review.comment}</p>
+                  <p className="text-gray-700 pl-0 sm:pl-16">
+                    {review.comment}
+                  </p>
                 )}
               </div>
             ))}

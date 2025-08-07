@@ -7,6 +7,7 @@ import { FaStar } from "react-icons/fa";
 import AuthGuard from "@/guard/AuthGuard";
 import Link from "next/link";
 import { use } from "react";
+import { callAPI } from "@/config/axios";
 
 interface Event {
   event_id: number;
@@ -40,9 +41,7 @@ export default function ReviewPage({ params }: PageProps) {
       }
 
       try {
-        const response = await fetch(`http://localhost:3232/events/${eventId}`);
-        if (!response.ok) throw new Error("Event not found");
-        const data = await response.json();
+        const { data } = await callAPI.get(`/events/${eventId}`);
         const eventDate = new Date(data.date);
         const now = new Date();
 
@@ -72,23 +71,13 @@ export default function ReviewPage({ params }: PageProps) {
 
     try {
       const userId = localStorage.getItem("userId");
-      const response = await fetch(`http://localhost:3232/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          eventId: parseInt(eventId),
-          userId: parseInt(userId!),
-          rating,
-          comment,
-        }),
-      });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error);
-      }
+      await callAPI.post("/reviews", {
+        eventId: parseInt(eventId),
+        userId: parseInt(userId!),
+        rating,
+        comment,
+      });
 
       router.push(`/event/${eventId}`);
     } catch (err: any) {

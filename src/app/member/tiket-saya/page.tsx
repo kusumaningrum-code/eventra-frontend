@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { callAPI } from "@/config/axios";
 import { format } from "date-fns";
 import Link from "next/link";
 import {
@@ -51,9 +51,7 @@ export default function TicketSaya() {
 
     const fetchTickets = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3232/transactions/user/${userId}`
-        );
+        const response = await callAPI.get(`/transactions/user/${userId}`);
         setTickets(response.data);
       } catch (err) {
         console.log("Failed to fetch tickets:", err);
