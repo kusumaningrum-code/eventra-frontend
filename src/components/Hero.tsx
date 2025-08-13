@@ -2,19 +2,18 @@
 
 import * as React from "react";
 import Autoplay from "embla-carousel-autoplay";
-
-import { Card, CardContent } from "./ui/card";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "./ui/carousel";
+} from "@/components/ui/carousel";
+import Image from "next/image";
 
 const Hero = () => {
   const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
+    Autoplay({ delay: 3500, stopOnInteraction: true })
   );
 
   const images = [
@@ -24,32 +23,30 @@ const Hero = () => {
   ];
 
   return (
-    <div>
+    <div className="relative w-full">
       <Carousel
         plugins={[plugin.current]}
-        className="w-full p-5"
+        className="w-full"
         onMouseEnter={plugin.current.stop}
         onMouseLeave={plugin.current.reset}
       >
         <CarouselContent>
-          {images.map((image, index) => (
-            <CarouselItem key={index}>
-              <div className="">
-                <Card>
-                  <CardContent className="p-0">
-                    <img
-                      src={image}
-                      alt={`Image ${index + 1}`}
-                      className="w-full h-auto object-cover rounded-md"
-                    />
-                  </CardContent>
-                </Card>
+          {images.map((src, i) => (
+            <CarouselItem key={i}>
+              <div className="relative w-full h-[28vh] sm:h-[34vh] lg:h-[38vh]">
+                <Image
+                  src={src}
+                  alt={`Hero ${i + 1}`}
+                  fill
+                  priority={i === 0}
+                  className="object-cover"
+                />
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="absolute left-4 top-1/2 transform -translate-y-1/2 " />
-        <CarouselNext className="absolute right-4 top-1/2 transform -translate-y-1/2"/>
+        <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2" />
+        <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2" />
       </Carousel>
     </div>
   );
