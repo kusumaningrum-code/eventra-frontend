@@ -2,25 +2,35 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { callAPI } from "@/config/axios";
 import FormInput from "@/components/FormInput";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 const ForgotPassword: React.FunctionComponent = () => {
+  const router = useRouter();
+  const user = useAppSelector((state) => state.userReducer);
   const [email, setEmail] = useState<string>("");
   const [statusMsg, setStatusMsg] = useState<string>("");
   const [isError, setIsError] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
+  useEffect(() => {
+    if (user?.isAuth) {
+  router.replace("/");
+    }
+  }, [user?.isAuth, router]);
   const onForgotPassword = async () => {
     setStatusMsg("");
     setIsError(false);
     setIsSubmitting(true);
     try {
       const response = await callAPI.post("/user/forgot-password", { email });
-      setStatusMsg(response?.data?.message || "Email terkirim. Cek kotak masukmu.");
+      setStatusMsg(
+        response?.data?.message || "Email terkirim. Cek kotak masukmu."
+      );
       setIsError(false);
     } catch (error: any) {
       const msg =

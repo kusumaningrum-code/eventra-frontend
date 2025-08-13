@@ -4,8 +4,8 @@
 import FormInput from "@/components/FormInput";
 import * as React from "react";
 import Image from "next/image";
-import { useState } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Button } from "@/components/ui/button";
 import { setSignIn } from "@/lib/redux/features/userSlice";
 import { useRouter } from "next/navigation";
@@ -16,9 +16,17 @@ const SignIn: React.FunctionComponent<any> = () => {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [errorMsg, setErrorMsg] = useState<string>("");      
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); 
+  const [errorMsg, setErrorMsg] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.userReducer);
+
+  useEffect(() => {
+    if (user?.isAuth) {
+      router.replace("/");
+    }
+  }, [user?.isAuth, router]);
+
 
   const onSignIn = async () => {
     setErrorMsg("");              
@@ -51,7 +59,6 @@ const SignIn: React.FunctionComponent<any> = () => {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col lg:flex-row justify-center items-center gap-8 lg:gap-16">
-          {/* Left */}
           <div className="flex flex-col items-center text-center lg:text-left max-w-md">
             <div className="w-full max-w-sm lg:max-w-md mb-6">
               <Image
