@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { callAPI } from "@/config/axios";
+
 type Category = {
   displayName: string;
   dbTopic: string;
@@ -76,41 +77,39 @@ const CategoryEvent = () => {
 
   return (
     <div>
-      <div className="bg-customLightBlue p-10">
-        <h1 className="text-4xl font-ibrand text-white mb-8">Kategori Event</h1>
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-ibrand text-white mb-6">
+        Kategori Event
+      </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center">
-          {CATEGORIES.map((category, idx) => (
-            <div
-              key={idx}
-              onClick={() => handleCategoryClick(category.dbTopic)}
-              className="group relative w-48 cursor-pointer"
-            >
-              <div className="overflow-hidden rounded-lg">
-                <Image
-                  src={category.image}
-                  alt={category.displayName}
-                  width={500}
-                  height={250}
-                  className="rounded-lg transition-transform duration-300 group-hover:scale-110"
-                  priority={idx < 4}
-                />
-              </div>
-
-              <div className="absolute inset-0 bg-black bg-opacity-30 rounded-lg transition-opacity duration-300 group-hover:bg-opacity-50" />
-
-              <p className="absolute bottom-4 left-0 right-0 text-center font-ibrand text-2xl text-white">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        {CATEGORIES.map((category, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleCategoryClick(category.dbTopic)}
+            className="group relative w-full overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-white/60"
+            aria-label={`Kategori ${category.displayName}`}
+          >
+            <div className="relative h-28 sm:h-36">
+              <Image
+                src={category.image}
+                alt={category.displayName}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
+                priority={idx < 4}
+              />
+              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors" />
+              <p className="absolute inset-x-0 bottom-3 text-center font-ibrand text-lg sm:text-xl text-white drop-shadow">
                 {category.displayName}
               </p>
             </div>
-          ))}
-        </div>
+          </button>
+        ))}
       </div>
 
-      <div className="bg-white p-8">
+      <div className="mt-8 text-center">
         <button
           onClick={() => router.push("/events")}
-          className="w-full text-center text-4xl font-ibrand transition-colors duration-300 hover:text-customOrange focus:outline-none"
+          className="inline-flex items-center justify-center rounded-full bg-white/90 hover:bg-white text-customDarkBlue px-6 py-3 font-ibrand text-lg shadow"
         >
           Jelajahi event lainnya
         </button>
