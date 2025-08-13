@@ -16,30 +16,42 @@ const SignIn: React.FunctionComponent<any> = () => {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState<string>("");      
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); 
   const dispatch = useAppDispatch();
 
   const onSignIn = async () => {
+    setErrorMsg("");              
+    setIsSubmitting(true);
     try {
       const response = await callAPI.post(`/user/sign-in`, { email, password });
-      console.log("CHECK SIGNIN RESPONSE :", response.data);
+
       dispatch(setSignIn({ ...response.data, isAuth: true }));
       localStorage.setItem("tkn", response.data.token);
-      localStorage.setItem("userId", response.data.id);
-      console.log("ini id dari frontend", response.data);
+      localStorage.setItem("userId", response.data.id.toString());
 
       router.replace("/");
-    } catch (error) {
-      console.log(error);
+    } catch (err: any) {
+      const apiMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "Terjadi kesalahan saat login. Coba lagi.";
+
+      setErrorMsg(apiMessage);
+      console.log("LOGIN ERROR:", {
+        status: err?.response?.status,
+        data: err?.response?.data,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-      {/* Container utama dengan responsive design */}
       <div className="max-w-6xl mx-auto">
-        {/* Layout flex yang berubah di mobile */}
         <div className="flex flex-col lg:flex-row justify-center items-center gap-8 lg:gap-16">
-          {/* Left side - Illustration & Welcome text */}
+          {/* Left */}
           <div className="flex flex-col items-center text-center lg:text-left max-w-md">
             <div className="w-full max-w-sm lg:max-w-md mb-6">
               <Image
@@ -62,18 +74,14 @@ const SignIn: React.FunctionComponent<any> = () => {
             </div>
           </div>
 
-          {/* Right side - Login Form */}
           <div className="w-full max-w-md">
             <Card className="w-full p-6 sm:p-8 lg:p-10 shadow-lg border-0 bg-white">
-              {/* Header */}
-              <div className="mb-8 text-center">
+              <div className="mb-6 text-center">
                 <h1 className="font-ibrand text-2xl sm:text-3xl text-customDarkBlue mb-4">
                   Masuk ke akunmu
                 </h1>
                 <div className="flex flex-col sm:flex-row justify-center items-center gap-1 text-sm">
-                  <span className="text-gray-600">
-                    Tidak punya akun Eventra?
-                  </span>
+                  <span className="text-gray-600">Tidak punya akun Eventra?</span>
                   <a
                     href="/sign-up"
                     className="text-customLightBlue hover:text-customMediumBlue transition-colors font-medium"
@@ -82,8 +90,11 @@ const SignIn: React.FunctionComponent<any> = () => {
                   </a>
                 </div>
               </div>
-
-              {/* Form */}
+              {errorMsg && (
+                <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {errorMsg}
+                </div>
+              )}
               <form
                 className="space-y-6"
                 onSubmit={(e) => {
@@ -97,6 +108,7 @@ const SignIn: React.FunctionComponent<any> = () => {
                   label="Email"
                   placeholder="Masukkan email Anda"
                   onChange={(e: any) => setEmail(e.target.value)}
+                  value={email} 
                 />
                 <FormInput
                   name="password"
@@ -104,21 +116,20 @@ const SignIn: React.FunctionComponent<any> = () => {
                   label="Password"
                   placeholder="Masukkan password Anda"
                   onChange={(e: any) => setPassword(e.target.value)}
+                  value={password} 
                 />
 
-                {/* Login Button */}
                 <div className="pt-4">
                   <Button
                     type="submit"
                     className="w-full bg-customLightBlue hover:bg-customMediumBlue text-white rounded-lg py-3 font-medium transition-colors shadow-md hover:shadow-lg"
-                    disabled={!email || !password}
+                    disabled={!email || !password || isSubmitting}
                   >
-                    Login Sekarang
+                    {isSubmitting ? "Memproses..." : "Login Sekarang"}
                   </Button>
                 </div>
               </form>
 
-              {/* Forgot Password Link */}
               <div className="text-center mt-6 pt-4 border-t border-gray-100">
                 <a
                   href="/forgot-password"
@@ -136,4 +147,3 @@ const SignIn: React.FunctionComponent<any> = () => {
 };
 
 export default SignIn;
-//
