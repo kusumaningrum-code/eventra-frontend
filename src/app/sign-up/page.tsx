@@ -241,10 +241,13 @@ import FormInput from "@/components/FormInput";
 import { Formik, Form, FormikProps } from "formik";
 
 import * as React from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { callAPI } from "@/config/axios";
 import { SignUpSchema } from "./SignUpSchema";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useRouter } from "next/navigation";
 
 interface FormValue {
   fullname: string;
@@ -258,6 +261,15 @@ interface FormValue {
 }
 
 const SignUp: React.FunctionComponent<any> = () => {
+  const router = useRouter();
+  const user = useAppSelector((state) => state.userReducer);
+
+  useEffect(() => {
+    if (user?.isAuth) {
+      router.replace("/");
+    }
+  }, [user?.isAuth, router]);
+
   const onSignUp = async (values: FormValue) => {
     console.log("Values being sent", values);
     try {
