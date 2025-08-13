@@ -19,7 +19,7 @@ const ForgotPassword: React.FunctionComponent = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   useEffect(() => {
     if (user?.isAuth) {
-  router.replace("/");
+      router.replace("/");
     }
   }, [user?.isAuth, router]);
   const onForgotPassword = async () => {
